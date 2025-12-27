@@ -1,3 +1,4 @@
+**本项目为`hbzsoft/lan_message_transmission-system`的fork。**
 # LAN Message Transmission System
 
 该项目允许用户通过局域网向接收端发布用弹窗显示的通知。  
