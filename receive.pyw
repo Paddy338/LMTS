@@ -16,11 +16,22 @@ import threading
 import pyperclip
 import winsound
 VERSION='1.4'
+port=12345
 s=socket.socket(type=socket.SOCK_DGRAM)
-s.bind(('0.0.0.0',12345))
+s.bind(('0.0.0.0',port))
 count={}
 c=''
 msg=''
+##################################################
+def get_ip():
+    try:
+        tempsocket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        tempsocket.connect(('1.1.1.1', 80))
+        ip=tempsocket.getsockname()[0]
+        tempsocket.close()
+        return ip
+    except:
+        return '获取失败，可能未连接网络。'
 def show_about():
     messagebox.showinfo(title='关于', message='''局域网信息传输系统 (LMTS) 
 版本 %s
@@ -89,7 +100,10 @@ def show():
     
     link.pack()
     root.mainloop()
-
+##################################################
+local_ip=get_ip()
+messagebox.showinfo(title='启动信息', message=f'''接收端已启动
+端口：{port}，IP地址：{local_ip}''')
 while True:
     (c,addr)=s.recvfrom(2048)
     ip=addr[0]
