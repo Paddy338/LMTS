@@ -10,18 +10,23 @@ You should have received a copy of the GNU General Public License along with thi
 from tkinter import *
 import tkinter.messagebox as tkmsgbox
 import tkinter.font as tkfont
-import tkinter.ttk as ttk
+import ttkbootstrap as ttk
 import socket
 import webbrowser
-VERSION='1.4'
-message_typeface_current_family="Courier"
+# 初始化变量
+VERSION='1.5.0'
+message_typeface_family="Courier"
 message_text_size=12
+ip_list = []
+radio_buttons = []         # 存储 Radiobutton 控件，方便刷新
+
 def show_about():
     tkmsgbox.showinfo(title='关于', message='''局域网信息传输系统 (LMTS) 
 版本 %s
 原作者：韩邦泽
 二次开发：裴启迪
 '''%VERSION)
+
 def open_url(URL):
     webbrowser.open(URL,new=0)
 
@@ -32,7 +37,7 @@ def send_socket():
     message = msg.get('1.0','end-1c')
     if urgent.get():
         message += '\a'
-    s.sendto(message.encode('gbk'),(ip.get(),12345))
+    s.sendto(message.encode('gbk'),(ip_var.get(),12345))
     try:
         (c,addr)=s.recvfrom(1024)
     except ConnectionResetError:
@@ -49,7 +54,7 @@ def send_socket():
             tkmsgbox.showerror(title='提示',
                                  message='发送太频繁，请稍后重试。')
 
-def main():
+'''def main():
     # 创建窗口及组件
     global msg, ip, urgent
     windows=Tk()
@@ -103,6 +108,98 @@ def main():
 
     link = Button(windows, text='官方网站: hbzsoft.github.io', font=('Arial,宋体', 8),command=lambda: open_url('https://hbzsoft.github.io/'),borderwidth=0)
     link.pack()
-    windows.mainloop()
-if __name__ == "__main__":
-    main()
+    windows.mainloop()'''
+
+
+global msg, ip, urgent
+# 先选择一个主题并创建窗口
+windows = ttk.Window(themename='cosmo')
+windows.title('局域网信息传输系统 (LMTS) v%s - 发送端' % VERSION)
+try:
+    windows.iconbitmap("icons/appicon.ico")
+except TclError:
+    try:
+        windows.iconbitmap("appicon.ico")
+    except TclError:
+        windows.iconbitmap("")
+        tkmsgbox.showinfo(message='加载应用图标错误，可能自定义图标不在当前目录。\n将回退到默认图标。')
+
+ip_var = ttk.StringVar()   # 选中的 IP 地址
+# 菜单
+menubar = Menu(windows)
+windows.config(menu=menubar)
+
+file_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="文件", menu=file_menu)
+file_menu.add_command(label="退出", command=windows.quit)
+
+help_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="帮助", menu=help_menu)
+help_menu.add_command(label="仓库地址",
+                        command=lambda: open_url('https://github.com/Paddy338/LMTS'))
+help_menu.add_command(label="官方网站",
+                        command=lambda: open_url('https://hbzsoft.github.io/'))
+help_menu.add_separator()
+help_menu.add_command(label="关于...", command=show_about)
+
+# 输入IP地址
+'''ipaddr_frm = ttk.Frame(windows)
+ipaddr_frm.pack()
+ip_hint = ttk.Label(ipaddr_frm, text='接收端 IP 地址: ')
+ip_hint.pack(side='left')
+ip = ttk.Entry(ipaddr_frm)
+ip.pack(side='right')'''
+ipaddr_form=ttk.Frame(windows)
+ipaddr_form.pack(side=LEFT, fill=Y, padx=10, pady=10)
+
+ip_hint=ttk.Label(ipaddr_form, text="IP 地址：")
+ip_hint.pack(anchor=W)
+ip_entry=ttk.Entry(ipaddr_form)
+ip_entry.pack(anchor=W)
+
+def refresh_ip_list():
+    # 清空旧控件
+    for rb in radio_buttons:
+        rb.destroy()
+    radio_buttons.clear()
+
+    # 重新生成单选框
+    for ip in ip_list:
+        rb = ttk.Radiobutton(ipaddr_form, text=ip, value=ip, variable=ip_var)
+        rb.pack(anchor=W)
+        radio_buttons.append(rb)
+
+def add_ip():
+    ip = ip_entry.get().strip()
+    if ip and ip not in ip_list:
+        ip_list.append(ip)
+        refresh_ip_list()
+ttk.Button(ipaddr_form, text="添加", command=add_ip).pack(anchor=W,pady=10)
+
+# 输入信息
+default_font = tkfont.Font(family=message_typeface_family,
+                            size=message_text_size)
+msg = Text(windows, width=100, height=20, font=default_font)
+msg.pack()
+
+urgent_frm = ttk.Frame(windows)
+urgent_frm.pack()
+urgent = ttk.BooleanVar()
+urgent_check = ttk.Checkbutton(urgent_frm,
+                                text='加急（接收端将发出提示音）',
+                                variable=urgent)
+urgent_check.pack()
+
+send = ttk.Button(windows,
+                    text='发送',
+                    command=send_socket,
+                    bootstyle='primary',)
+send.pack()
+
+link = ttk.Button(windows,
+                    text='官方网站: hbzsoft.github.io',
+                    bootstyle='link',
+                    command=lambda: open_url('https://hbzsoft.github.io/'))
+link.pack()
+
+windows.mainloop()
