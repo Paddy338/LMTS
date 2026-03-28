@@ -13,12 +13,14 @@ import tkinter.font as tkfont
 import ttkbootstrap as ttk
 import socket
 import webbrowser
+import json
 # 初始化变量
 VERSION='1.5.0'
+IP_FILE='ips.json'
 message_typeface_family="Courier"
 message_text_size=12
-ip_list = []
 radio_buttons = []         # 存储 Radiobutton 控件，方便刷新
+global msg, ip, urgent
 
 def show_about():
     tkmsgbox.showinfo(title='关于', message='''局域网信息传输系统 (LMTS) 
@@ -54,7 +56,8 @@ def send_socket():
             tkmsgbox.showerror(title='提示',
                                  message='发送太频繁，请稍后重试。')
 
-'''def main():
+'''
+def main():
     # 创建窗口及组件
     global msg, ip, urgent
     windows=Tk()
@@ -111,7 +114,6 @@ def send_socket():
     windows.mainloop()'''
 
 
-global msg, ip, urgent
 # 先选择一个主题并创建窗口
 windows = ttk.Window(themename='cosmo')
 windows.title('局域网信息传输系统 (LMTS) v%s - 发送端' % VERSION)
@@ -157,6 +159,20 @@ ip_hint.pack(anchor=W)
 ip_entry=ttk.Entry(ipaddr_form)
 ip_entry.pack(anchor=W)
 
+def load_ip_list():
+    global ip_list
+    try:
+        with open(IP_FILE, 'r', encoding='utf-8') as file:
+            ip_list=json.load(file)
+            if not isinstance(ip_list,list): # 判断ip_list是不是列表类型
+                ip_list=[]
+    except (FileNotFoundError, json.JSONDecodeError):
+        ip_list=[]
+
+def save_ip_list():
+    with open(IP_FILE, 'w', encoding='utf-8') as file:
+        json.dump(ip_list, file, ensure_ascii=False, indent=4)
+
 def refresh_ip_list():
     # 清空旧控件
     for rb in radio_buttons:
@@ -170,10 +186,19 @@ def refresh_ip_list():
         radio_buttons.append(rb)
 
 def add_ip():
-    ip = ip_entry.get().strip()
-    if ip and ip not in ip_list:
-        ip_list.append(ip)
+    new_ip = ip_entry.get().strip()
+    if new_ip and new_ip not in ip_list:
+        ip_list.append(new_ip)
+        save_ip_list()
         refresh_ip_list()
+        ip_entry.delete(0, 'end') # 清空输入框
+
+load_ip_list()
+refresh_ip_list()
+if ip_list:
+    ip_var.set(ip_list[0])
+else:
+    ip_var.set('')
 ttk.Button(ipaddr_form, text="添加", command=add_ip).pack(anchor=W,pady=10)
 
 # 输入信息
@@ -193,7 +218,9 @@ urgent_check.pack()
 send = ttk.Button(windows,
                     text='发送',
                     command=send_socket,
-                    bootstyle='primary',)
+                    bootstyle='primary',
+                    width=5,
+                    )
 send.pack()
 
 link = ttk.Button(windows,
