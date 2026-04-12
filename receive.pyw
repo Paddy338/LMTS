@@ -178,7 +178,7 @@ def show_message(text, addr):
         start = "1.0 + %d chars" % m.start()
         end = "1.0 + %d chars" % m.end()
         label.tag_add("cn", start, end)
-    label.tag_configure("cn", font=label_font_cn)
+    label.tag_configure("cn", font=(label_font_cn, 30))
     label.pack()
 
     frm_addr = Label(win, text='由  ' + addr[0] + ' 发送')
