@@ -19,7 +19,7 @@ import webbrowser
 import winsound
 import queue
 
-VERSION='1.5.0'
+VERSION='1.5.1'
 port=12345
 try:
     s=socket.socket(type=socket.SOCK_DGRAM)
@@ -38,6 +38,7 @@ msg_queue = queue.Queue()
 current_msg = ''
 ##################################################
 def get_ip():
+    """获取**本机** IP 地址"""
     try:
         tempsocket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         tempsocket.connect(('1.1.1.1', 80))
@@ -45,14 +46,18 @@ def get_ip():
         tempsocket.close()
         return ip
     except:
-        return '获取失败，可能未连接 Internet。\n 你可以在命令提示符中输入 ipconfig /all 查看 IP 地址。'
+        return "获取失败，可能未连接 Internet。\n 你可以在命令提示符中输入 ipconfig /all 查看 IP 地址。"
+    
 def show_about():
     tkmsgbox.showinfo(title='关于', message='''局域网信息传输系统 (LMTS) 
 版本 %s
 原作者：韩邦泽
 二次开发：裴启迪
 '''%VERSION)
+    
 def break_down(s):
+    """处理消息：
+    判断是否加急（末尾 \\a），自动换行"""
     if not s:
         return
     if s[-1]=='\a':
@@ -71,11 +76,16 @@ def break_down(s):
         return '\n'.join([s[i:i+30] for i in range(0, len(s), 30)])
 
 def open_url():
+    """打开官方网站"""
     webbrowser.open('https://hbzsoft.github.io/',new=0)
+
 def cp():
-    """Copy the last-displayed message to the clipboard."""
+    """将最后显示的消息复制到剪贴板"""
     pyperclip.copy(current_msg)
-'''def show():
+
+'''
+# 此处为 1.4 版本的函数代码
+def show():
     if not msg:
         return
     
@@ -131,9 +141,9 @@ def cp():
     link.pack()
     root.mainloop()'''
 def show_message(text, addr):
-    """Display a popup window for *text* received from *addr*.
-    This function runs on the GUI thread only.
-    """
+    """显示从 addr 接收到的消息 `text` 的弹窗。
+    此函数仅在 GUI 线程上运行。"""
+    
     global current_msg
     current_msg = text
     if not text:
@@ -166,6 +176,17 @@ def show_message(text, addr):
     help_menu.add_command(label='官方网站', command=open_url)
     help_menu.add_command(label='关于', command=show_about)
 
+    '''
+    如果出现问题，将以下段改为：
+    
+    label = Text(win, font=(label_font_cn, 30))
+    label.configure(foreground='white', background='black', width=25, height=10)
+    label.insert('1.0', break_down(text))
+    label.tag_configure("center", justify="center")
+    label.tag_add("center", "1.0", 'end')
+    label.pack()
+    '''
+
     label = Text(win, font=(label_font_western, 30))
     label.configure(foreground='white', background='black',
                     width=25, height=10) # 显式设置属性防止主题覆盖
@@ -179,12 +200,13 @@ def show_message(text, addr):
         end = "1.0 + %d chars" % m.end()
         label.tag_add("cn", start, end)
     label.tag_configure("cn", font=(label_font_cn, 30))
+
     label.pack()
 
     frm_addr = Label(win, text='由  ' + addr[0] + ' 发送')
     frm_addr.configure(foreground='white', background='black')
     frm_addr.pack()
-    copy = Button(win, font=('Microsoft Yahei UI', 14), text='复制', command=cp)
+    copy = Button(win, text='复制', command=cp)
     copy.pack()
 
     link = Button(win, text='官方网站: hbzsoft.github.io', font=('Arial', 8),
@@ -192,8 +214,10 @@ def show_message(text, addr):
     link.configure(fg="white", bg="black", borderwidth=0)
     link.pack()
 
-
+# 以下两个函数是 **AI 提供**的，是 Python 网络编程的稳定写法
 def process_queue():
+    """处理消息队列（从监听线程传来的消息）\\
+        定时看有没有新消息，有就弹窗口"""
     try:
         text, addr = msg_queue.get_nowait()
     except queue.Empty:
@@ -201,16 +225,17 @@ def process_queue():
     show_message(text, addr)
 
 
-def listener(): # 监听线程
-    while True:
-        data, addr = s.recvfrom(2048)
+def listener(): 
+    """监听线程：接收 UDP 消息并放入队列"""
+    while True: # 无限循环监听
+        data, addr = s.recvfrom(2048) # 收消息
         ip = addr[0]
         cnt = count.get(ip)
         if cnt is None:
             count[ip] = int(time.time())
         else:
             diff = int(time.time()) - cnt
-            if diff <= 5:
+            if diff <= 5: # 防刷屏，5 秒内不能重复发
                 s.sendto(b'refused', addr)
                 continue
             else:

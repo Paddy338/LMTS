@@ -15,7 +15,7 @@ import socket
 import webbrowser
 import json
 # 初始化变量
-VERSION='1.5.0'
+VERSION='1.5.1'
 IP_FILE='ips.json'
 message_typeface_family="Courier"
 message_text_size=12
@@ -166,7 +166,11 @@ def load_ip_list():
             ip_list=json.load(file)
             if not isinstance(ip_list,list): # 判断ip_list是不是列表类型
                 ip_list=[]
-    except (FileNotFoundError, json.JSONDecodeError):
+    except json.JSONDecodeError:
+        tkmsgbox.showwarning(title="JSON 解析错误", message="JSON 文件的字符串格式不正确，可能擅自不正确地修改了 JSON 文件。\\ 将把常用 IP 地址置为空状态。")
+        ip_list=[]
+    except FileNotFoundError:
+        # 文件可能还未创建
         ip_list=[]
 
 def save_ip_list():
@@ -204,7 +208,7 @@ ttk.Button(ipaddr_form, text="添加", command=add_ip).pack(anchor=W,pady=10)
 # 输入信息
 default_font = tkfont.Font(family=message_typeface_family,
                             size=message_text_size)
-msg = Text(windows, width=100, height=20, font=default_font)
+msg = Text(windows, width=80, height=25, font=default_font)
 msg.pack()
 
 urgent_frm = ttk.Frame(windows)

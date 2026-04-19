@@ -28,5 +28,5 @@
 运行环境：`Windows+Python 3.5` 以上或 `Ubuntu 20.04`以上  
 需用 `pip` 安装 `pyperclip` 和 `ttkbootstrap`。
 
-当前稳定版本：v1.4.0
-当前预览版本：v1.5.0
+当前稳定版本：v1.5.0  
+当前预览版本：v1.5.1
