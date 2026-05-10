@@ -1,4 +1,5 @@
 # 在项目根目录运行
+chcp 65001
 python -m PyInstaller -F -w .\send.pyw --icon .\icons\sendicon.ico
 python -m PyInstaller -F -w .\receive.pyw --icon .\icons\receiveicon.ico
 

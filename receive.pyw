@@ -9,34 +9,32 @@ You should have received a copy of the GNU General Public License along with thi
 
 from tkinter import *
 import tkinter.messagebox as tkmsgbox
-import pyperclip
 import re
 import socket
 import threading
 import time
-import ttkbootstrap as ttk
 import webbrowser
 import winsound
 import queue
 
+import pyperclip
+import ttkbootstrap as ttk
+
 VERSION='1.5.1'
-port=12345
+PORT=12345
 try:
     s=socket.socket(type=socket.SOCK_DGRAM)
-    s.bind(('0.0.0.0',port))
+    s.bind(('0.0.0.0',PORT))
 except OSError as err:
     tkmsgbox.showerror(title="错误",message=f'''无法建立Socket，有可能本程序的另一实例还在运行。\n{err}''')
 count={}
 c=''
 msg=''
-label_font_western="Times New Roman"
-label_font_cn="仿宋"
-
-# queue for passing messages from listener thread to GUI thread
+LABEL_FONT_WESTERN="Times New Roman"
+LABEL_FONT_CN="仿宋"
 msg_queue = queue.Queue()
-# most recent message shown (for clipboard copy)
 current_msg = ''
-##################################################
+
 def get_ip():
     """获取**本机** IP 地址"""
     try:
@@ -83,63 +81,6 @@ def cp():
     """将最后显示的消息复制到剪贴板"""
     pyperclip.copy(current_msg)
 
-'''
-# 此处为 1.4 版本的函数代码
-def show():
-    if not msg:
-        return
-    
-    root = Tk()
-    # 设置窗口属性
-    root.config(bg='black')
-    root.wm_attributes('-topmost', True)
-    try:
-        root.iconbitmap("icons/appicon.ico") # 运行时记得从当前目录启动
-    except TclError:
-        try:
-            root.iconbitmap("appicon.ico")
-        except TclError:
-            root.iconbitmap("")  # 回退到默认图标
-            tkmsgbox.showinfo(message='加载应用图标错误，可能自定义图标不在当前目录。\n将回退到默认图标。')
-
-    root.title('局域网信息传输系统 (LMTS) v%s - 接收端'%VERSION)
-    
-    # 向窗口添加组件
-    menubar=Menu(root)
-    root.config(menu=menubar)
-
-    file_menu=Menu(menubar,tearoff=0)
-    menubar.add_cascade(label='文件', menu=file_menu)
-    file_menu.add_command(label='复制消息', command=cp)
-    file_menu.add_command(label='退出', command=root.quit)
-
-    help_menu=Menu(menubar,tearoff=0)
-    menubar.add_cascade(label='帮助',menu=help_menu)
-    help_menu.add_command(label='官方网站', command=open_url)
-    help_menu.add_command(label='关于', command=show_about)
-
-    label = Text(root, font=(label_font_western,30),fg='white',bg='black',width=25,height=10)
-    label.insert('1.0',break_down(msg))
-    label.tag_configure("center",justify="center")
-    label.tag_add("center","1.0",'end')
-    label.config(state=DISABLED)
-    s = label.get("1.0", "end-1c")
-    for m in re.finditer(r'[\u4e00-\u9fff]+', s):
-        start = "1.0 + %d chars" % m.start()
-        end = "1.0 + %d chars" % m.end()
-        label.tag_add("cn", start, end)
-    label.tag_configure("cn", font=label_font_cn)
-    label.pack()
-    
-    frm_addr=Label(root,text='由  '+addr[0]+' 发送',fg='white',bg='black')
-    frm_addr.pack()
-    copy = Button(root,font=('Microsoft Yahei UI',14),text='复制',command=cp,background="#1890FF")
-    copy.pack()
-    
-    link = Button(root, text='官方网站: hbzsoft.github.io', font=('Arial', 8),command=open_url,fg="white",bg="black",borderwidth=0)
-    
-    link.pack()
-    root.mainloop()'''
 def show_message(text, addr):
     """显示从 addr 接收到的消息 `text` 的弹窗。
     此函数仅在 GUI 线程上运行。"""
@@ -187,7 +128,7 @@ def show_message(text, addr):
     label.pack()
     '''
 
-    label = Text(win, font=(label_font_western, 30))
+    label = Text(win, font=(LABEL_FONT_WESTERN, 30))
     label.configure(foreground='white', background='black',
                     width=25, height=10) # 显式设置属性防止主题覆盖
     label.insert('1.0', break_down(text))
@@ -199,7 +140,7 @@ def show_message(text, addr):
         start = "1.0 + %d chars" % m.start()
         end = "1.0 + %d chars" % m.end()
         label.tag_add("cn", start, end)
-    label.tag_configure("cn", font=(label_font_cn, 30))
+    label.tag_configure("cn", font=(LABEL_FONT_CN, 30))
 
     label.pack()
 
@@ -248,7 +189,7 @@ def listener():
 ##################################################
 local_ip = get_ip()
 tkmsgbox.showinfo(title='启动信息', message=f'''接收端已启动
-端口：{port}，IP地址：{local_ip}
+端口：{PORT}，IP地址：{local_ip}
 如果在错误消息弹出后看到本对话框，则接收端未正常启动。''')
 
 # 创建一个不可见根窗口用于事件循环

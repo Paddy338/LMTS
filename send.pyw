@@ -10,15 +10,17 @@ You should have received a copy of the GNU General Public License along with thi
 from tkinter import *
 import tkinter.messagebox as tkmsgbox
 import tkinter.font as tkfont
-import ttkbootstrap as ttk
 import socket
 import webbrowser
 import json
-# 初始化变量
+
+import ttkbootstrap as ttk
+
+# 初始化变量、常量
 VERSION='1.5.1'
 IP_FILE='ips.json'
-message_typeface_family="Courier"
-message_text_size=12
+MESSAGE_TYPEFACE_FAMILY="Courier"
+MESSAGE_TEXT_SIZE=12
 radio_buttons = []         # 存储 Radiobutton 控件，方便刷新
 global msg, ip, urgent
 
@@ -56,63 +58,6 @@ def send_socket():
             tkmsgbox.showerror(title='提示',
                                  message='发送太频繁，请稍后重试。')
 
-'''
-def main():
-    # 创建窗口及组件
-    global msg, ip, urgent
-    windows=Tk()
-    try:
-        windows.iconbitmap("icons/appicon.ico") # 运行时记得从当前目录启动
-    except TclError:
-        try:
-            windows.iconbitmap("appicon.ico")
-        except TclError:
-            windows.iconbitmap("")  # 回退到默认图标
-            tkmsgbox.showinfo(message='加载应用图标错误，可能自定义图标不在当前目录。\n将回退到默认图标。')
-
-    # 菜单
-    menubar = Menu(windows)
-    windows.config(menu=menubar)
-
-    # 文件菜单
-    file_menu = Menu(menubar, tearoff=0)
-    menubar.add_cascade(label="文件", menu=file_menu)
-    file_menu.add_command(label="退出", command=windows.quit)
-
-    # 帮助菜单
-    help_menu = Menu(menubar, tearoff=0)
-    menubar.add_cascade(label="帮助", menu=help_menu)
-    help_menu.add_command(label="仓库地址", command=lambda: open_url('https://github.com/Paddy338/LMTS'))
-    help_menu.add_command(label="官方网站", command=lambda: open_url('https://hbzsoft.github.io/'))
-    help_menu.add_separator()
-
-    help_menu.add_command(label="关于...", command=show_about)
-
-    ipaddr_frm=Frame(windows)
-    ipaddr_frm.pack()
-    ip_hint=Label(ipaddr_frm,text='接收端 IP 地址: ')
-    ip_hint.pack(side='left')
-    ip=Entry(ipaddr_frm) # IP 地址输入框
-    ip.pack(side='right')
-    windows.title('局域网信息传输系统 (LMTS) v%s - 发送端'%VERSION)
-
-    default_font = tkfont.Font(family=message_typeface_current_family, size=message_text_size)
-    msg=Text(windows,width=100,height=20,font=default_font) # 信息输入框
-    msg.pack()
-
-    urgent_frm=Frame(windows) # 加急
-    urgent_frm.pack()
-    urgent=BooleanVar()
-    urgent_check=Checkbutton(urgent_frm,text='加急（接收端将发出提示音）',variable=urgent)
-    urgent_check.pack()
-
-    send=Button(windows,text='发送',command=send_socket,font=('Microsoft Yahei UI',14),background="#1890FF") # 发送按钮
-    send.pack()
-
-    link = Button(windows, text='官方网站: hbzsoft.github.io', font=('Arial,宋体', 8),command=lambda: open_url('https://hbzsoft.github.io/'),borderwidth=0)
-    link.pack()
-    windows.mainloop()'''
-
 
 # 先选择一个主题并创建窗口
 windows = ttk.Window(themename='cosmo')
@@ -127,6 +72,7 @@ except TclError:
         tkmsgbox.showinfo(message='加载应用图标错误，可能自定义图标不在当前目录。\n将回退到默认图标。')
 
 ip_var = ttk.StringVar()   # 选中的 IP 地址
+
 # 菜单
 menubar = Menu(windows)
 windows.config(menu=menubar)
@@ -145,19 +91,13 @@ help_menu.add_separator()
 help_menu.add_command(label="关于...", command=show_about)
 
 # 输入IP地址
-'''ipaddr_frm = ttk.Frame(windows)
-ipaddr_frm.pack()
-ip_hint = ttk.Label(ipaddr_frm, text='接收端 IP 地址: ')
-ip_hint.pack(side='left')
-ip = ttk.Entry(ipaddr_frm)
-ip.pack(side='right')'''
-ipaddr_form=ttk.Frame(windows)
+ipaddr_form=ttk.Labelframe(windows, padding=10, text="目标 IP 地址")
 ipaddr_form.pack(side=LEFT, fill=Y, padx=10, pady=10)
 
-ip_hint=ttk.Label(ipaddr_form, text="IP 地址：")
+ip_hint=ttk.Label(ipaddr_form, text="新增 IP 地址：")
 ip_hint.pack(anchor=W)
 ip_entry=ttk.Entry(ipaddr_form)
-ip_entry.pack(anchor=W)
+ip_entry.pack(anchor=E)
 
 def load_ip_list():
     global ip_list
@@ -167,7 +107,7 @@ def load_ip_list():
             if not isinstance(ip_list,list): # 判断ip_list是不是列表类型
                 ip_list=[]
     except json.JSONDecodeError:
-        tkmsgbox.showwarning(title="JSON 解析错误", message="JSON 文件的字符串格式不正确，可能擅自不正确地修改了 JSON 文件。\\ 将把常用 IP 地址置为空状态。")
+        tkmsgbox.showwarning(title="JSON 解析错误", message="JSON 文件的字符串格式不正确，可能是擅自不正确地修改了 JSON 文件。\\ 将把常用 IP 地址置为空状态。")
         ip_list=[]
     except FileNotFoundError:
         # 文件可能还未创建
@@ -185,7 +125,7 @@ def refresh_ip_list():
 
     # 重新生成单选框
     for ip in ip_list:
-        rb = ttk.Radiobutton(ipaddr_form, text=ip, value=ip, variable=ip_var)
+        rb = ttk.Radiobutton(ipaddr_form, padding=2, text=ip, value=ip, variable=ip_var)
         rb.pack(anchor=W)
         radio_buttons.append(rb)
 
@@ -203,12 +143,13 @@ if ip_list:
     ip_var.set(ip_list[0])
 else:
     ip_var.set('')
-ttk.Button(ipaddr_form, text="添加", command=add_ip).pack(anchor=W,pady=10)
+add_button = ttk.Button(ipaddr_form, text="添加", command=add_ip)
+add_button.pack(anchor=W,pady=6)
 
 # 输入信息
-default_font = tkfont.Font(family=message_typeface_family,
-                            size=message_text_size)
-msg = Text(windows, width=80, height=25, font=default_font)
+default_font = tkfont.Font(family=MESSAGE_TYPEFACE_FAMILY,
+                            size=MESSAGE_TEXT_SIZE)
+msg = ttk.Text(windows, width=80, height=25, font=default_font) # ttk.Text 没有自带占位符文本
 msg.pack()
 
 urgent_frm = ttk.Frame(windows)
@@ -223,8 +164,7 @@ send = ttk.Button(windows,
                     text='发送',
                     command=send_socket,
                     bootstyle='primary',
-                    width=5,
-                    )
+                    width=5)
 send.pack()
 
 link = ttk.Button(windows,
