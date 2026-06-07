@@ -15,24 +15,18 @@ import webbrowser
 import json
 
 import ttkbootstrap as ttk
+from show_about import VERSION, show_about
 
 # 初始化变量、常量
-VERSION='1.5.1'
-IP_FILE='ips.json'
-MESSAGE_TYPEFACE_FAMILY="Courier"
-MESSAGE_TEXT_SIZE=12
+IP_FILE = 'ips.json'
+MESSAGE_TYPEFACE_FAMILY = "Courier"
+MESSAGE_TEXT_SIZE = 12
 radio_buttons = []         # 存储 Radiobutton 控件，方便刷新
 global msg, ip, urgent
 
-def show_about():
-    tkmsgbox.showinfo(title='关于', message='''局域网信息传输系统 (LMTS) 
-版本 %s
-原作者：韩邦泽
-二次开发：裴启迪
-'''%VERSION)
 
-def open_url(URL):
-    webbrowser.open(URL,new=0)
+def open_url(url):
+    webbrowser.open(url,new=0)
 
 def send_socket():
     s=socket.socket(type=socket.SOCK_DGRAM)
@@ -44,54 +38,45 @@ def send_socket():
     s.sendto(message.encode('gbk'),(ip_var.get(),12345))
     try:
         (c,addr)=s.recvfrom(1024)
-    except ConnectionResetError:
-        tkmsgbox.showerror(title='错误',
-                             message='网络错误/接收端未运行\n详细信息：ConnectionResetError\n连接已重置。')
-    except socket.timeout:
-        tkmsgbox.showerror(title='错误',
-                             message='网络错误/接收端未运行\n详细信息：响应时间太长。')
+    except ConnectionResetError as err:
+        tkmsgbox.showerror(title = '错误',
+                             message = f'''网络错误\n详细信息：{err}''')
+    except socket.timeout as err:
+        tkmsgbox.showerror(title = '错误',
+                             message = f'''网络错误\n详细信息：{err}''')
     else:
         if c.decode()=='received':
-            tkmsgbox.showinfo(title='提示',
-                                message='接受端收到了您的信息。')
+            tkmsgbox.showinfo(title = '提示',
+                                message = '接受端收到了您的信息。')
         elif c.decode()=='refused':
             tkmsgbox.showerror(title='提示',
-                                 message='发送太频繁，请稍后重试。')
+                                 message = '发送太频繁，请稍后重试。')
 
 
 # 先选择一个主题并创建窗口
-windows = ttk.Window(themename='cosmo')
-windows.title('局域网信息传输系统 (LMTS) v%s - 发送端' % VERSION)
+window = ttk.Window(themename='cosmo')
+window.title('局域网信息传输系统 (LMTS) v%s - 发送端' % VERSION)
 try:
-    windows.iconbitmap("icons/appicon.ico")
+    window.iconbitmap("icons/appicon.ico")
 except TclError:
     try:
-        windows.iconbitmap("appicon.ico")
+        window.iconbitmap("appicon.ico")
     except TclError:
-        windows.iconbitmap("")
-        tkmsgbox.showinfo(message='加载应用图标错误，可能自定义图标不在当前目录。\n将回退到默认图标。')
+        window.iconbitmap("")
+        tkmsgbox.showinfo(message='加载应用图标错误，将回退到默认图标。')
 
 ip_var = ttk.StringVar()   # 选中的 IP 地址
 
-# 菜单
-menubar = Menu(windows)
-windows.config(menu=menubar)
+# 工具栏
+toolbar = ttk.Frame(window, bootstyle="light")
+toolbar.pack(side="top", fill="x")
+info_icon=ttk.PhotoImage(file="icons/about.png")
+info_btn=ttk.Button(toolbar,image=info_icon, command=show_about, bootstyle="link")
+info_btn.pack(side="right", padx=5)
 
-file_menu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="文件", menu=file_menu)
-file_menu.add_command(label="退出", command=windows.quit)
-
-help_menu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="帮助", menu=help_menu)
-help_menu.add_command(label="仓库地址",
-                        command=lambda: open_url('https://github.com/Paddy338/LMTS'))
-help_menu.add_command(label="官方网站",
-                        command=lambda: open_url('https://hbzsoft.github.io/'))
-help_menu.add_separator()
-help_menu.add_command(label="关于...", command=show_about)
 
 # 输入IP地址
-ipaddr_form=ttk.Labelframe(windows, padding=10, text="目标 IP 地址")
+ipaddr_form=ttk.Labelframe(window, padding=10, text="目标 IP 地址")
 ipaddr_form.pack(side=LEFT, fill=Y, padx=10, pady=10)
 
 ip_hint=ttk.Label(ipaddr_form, text="新增 IP 地址：")
@@ -107,7 +92,7 @@ def load_ip_list():
             if not isinstance(ip_list,list): # 判断ip_list是不是列表类型
                 ip_list=[]
     except json.JSONDecodeError:
-        tkmsgbox.showwarning(title="JSON 解析错误", message="JSON 文件的字符串格式不正确，可能是擅自不正确地修改了 JSON 文件。\\ 将把常用 IP 地址置为空状态。")
+        tkmsgbox.showwarning(title="JSON 解析错误", message="JSON 文件的字符串格式不正确，可能是擅自不正确地修改了 JSON 文件。\n 将把常用 IP 地址置为空状态。")
         ip_list=[]
     except FileNotFoundError:
         # 文件可能还未创建
@@ -143,16 +128,16 @@ if ip_list:
     ip_var.set(ip_list[0])
 else:
     ip_var.set('')
-add_button = ttk.Button(ipaddr_form, text="添加", command=add_ip)
+add_button = ttk.Button(ipaddr_form, text="添加", command=add_ip, bootstyle="secondary")
 add_button.pack(anchor=W,pady=6)
 
 # 输入信息
 default_font = tkfont.Font(family=MESSAGE_TYPEFACE_FAMILY,
                             size=MESSAGE_TEXT_SIZE)
-msg = ttk.Text(windows, width=80, height=25, font=default_font) # ttk.Text 没有自带占位符文本
-msg.pack()
+msg = ttk.Text(window, width=80, height=25, font=default_font) # ttk.Text 没有自带占位符文本
+msg.pack(padx=5, pady=5)
 
-urgent_frm = ttk.Frame(windows)
+urgent_frm = ttk.Frame(window)
 urgent_frm.pack()
 urgent = ttk.BooleanVar()
 urgent_check = ttk.Checkbutton(urgent_frm,
@@ -160,17 +145,16 @@ urgent_check = ttk.Checkbutton(urgent_frm,
                                 variable=urgent)
 urgent_check.pack()
 
-send = ttk.Button(windows,
+send = ttk.Button(window,
                     text='发送',
                     command=send_socket,
                     bootstyle='primary',
                     width=5)
-send.pack()
+send.pack(pady=8)
 
-link = ttk.Button(windows,
+link = ttk.Label(window,
                     text='官方网站: hbzsoft.github.io',
-                    bootstyle='link',
-                    command=lambda: open_url('https://hbzsoft.github.io/'))
+                    font=("Arial",8))
 link.pack()
 
-windows.mainloop()
+window.mainloop()
