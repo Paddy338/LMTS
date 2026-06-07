@@ -1,9 +1,35 @@
 # 在项目根目录运行
+# 绝对路径均为本人电脑上的路径，需要修改
 chcp 65001
-python -m PyInstaller -F -w .\send.pyw --icon .\icons\sendicon.ico
-python -m PyInstaller -F -w .\receive.pyw --icon .\icons\receiveicon.ico
+Clear-Host
 
+# 虚拟环境
+cd D:\Develop\LMTS_second_dev\ 
+.\.venv\Scripts\Activate.ps1
 
+# 清理
+rmdir /s .\build\
+rmdir /s .\dist\
+del /f *.spec
+
+# 打包
+PyInstaller -F -w  --icon .\icons\sendicon.ico `
+--strip --exclude-module test `
+--exclude-module unittest `
+--exclude-module tkinter.dnd `
+--exclude-module tkinter.tix `
+--hidden-import ttkbootstrap `
+.\send.pyw
+
+PyInstaller -F -w  --icon .\icons\receiveicon.ico `
+--strip --exclude-module=test `
+--exclude-module unittest `
+--exclude-module tkinter.dnd `
+--exclude-module tkinter.tix `
+--hidden-import ttkbootstrap `
+.\receive.pyw
+
+# 签名
 $ExeFiles=@(
     "D:\Develop\LMTS_second_dev\dist\send.exe",
     "D:\Develop\LMTS_second_dev\dist\receive.exe"
@@ -27,4 +53,5 @@ foreach($exe in $ExeFiles){
         Write-Warning "找不到文件：$exe"
     }
 }
+
 pause

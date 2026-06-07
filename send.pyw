@@ -70,8 +70,11 @@ ip_var = ttk.StringVar()   # 选中的 IP 地址
 # 工具栏
 toolbar = ttk.Frame(window, bootstyle="light")
 toolbar.pack(side="top", fill="x")
-info_icon=ttk.PhotoImage(file="icons/about.png")
-info_btn=ttk.Button(toolbar,image=info_icon, command=show_about, bootstyle="link")
+try:
+    info_icon=ttk.PhotoImage(file="icons/about.png")
+    info_btn=ttk.Button(toolbar, image=info_icon, command=show_about, bootstyle="link")
+except:
+    info_btn=ttk.Button(toolbar, text="关于", command=show_about, bootstyle="link")
 info_btn.pack(side="right", padx=5)
 
 

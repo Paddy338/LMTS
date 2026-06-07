@@ -85,16 +85,17 @@ def show_message(text, addr):
     menubar = ttk.Menu(window)
     window.config(menu=menubar)
 
-    help_menu = ttk.Menu(menubar, tearoff=0)
-    menubar.add_cascade(label='帮助', menu=help_menu)
-    help_menu.add_command(label='关于...', command=show_about)
+    main_menu = ttk.Menu(menubar, tearoff=0)
+    menubar.add_cascade(label='菜单', menu=main_menu)
+    main_menu.add_command(label='关于...', command=show_about)
 
 
     label = Text(window, font=("Noto Sans SC", 30))
-    label.configure(foreground='white', background='black', width=30, height=10)
+    label.configure(foreground='white', background='black', width=25, height=8)
     label.insert('1.0', break_down(text))
     label.tag_configure("center", justify="center")
     label.tag_add("center", "1.0", 'end')
+    label.config(state=DISABLED) # 只读模式
     label.pack(padx=5, pady=5, expand=TRUE, fill=X)
   
     frm_addr = ttk.Label(window, text='由 ' + addr[0] + ' 发送')
