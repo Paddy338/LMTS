@@ -8,9 +8,9 @@ cd D:\Develop\LMTS_second_dev\
 .\.venv\Scripts\Activate.ps1
 
 # 清理
-rmdir /s .\build\
-rmdir /s .\dist\
-del /f *.spec
+rmdir -path ".\build\" -recurse
+rmdir -path ".\dist\" -recurse
+del /f .\*.spec
 
 # 打包
 PyInstaller -F -w  --icon .\icons\sendicon.ico `

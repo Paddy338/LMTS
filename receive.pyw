@@ -96,7 +96,7 @@ def show_message(text, addr):
     label.tag_configure("center", justify="center")
     label.tag_add("center", "1.0", 'end')
     label.config(state=DISABLED) # 只读模式
-    label.pack(padx=5, pady=5, expand=TRUE, fill=X)
+    label.pack(padx=2, pady=2, expand=TRUE, fill=X)
   
     frm_addr = ttk.Label(window, text='由 ' + addr[0] + ' 发送')
     frm_addr.configure(foreground='white', background='black')

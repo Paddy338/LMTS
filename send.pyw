@@ -82,10 +82,6 @@ info_btn.pack(side="right", padx=5)
 ipaddr_form=ttk.Labelframe(window, padding=10, text="目标 IP 地址")
 ipaddr_form.pack(side=LEFT, fill=Y, padx=10, pady=10)
 
-ip_hint=ttk.Label(ipaddr_form, text="新增 IP 地址：")
-ip_hint.pack(anchor=W)
-ip_entry=ttk.Entry(ipaddr_form)
-ip_entry.pack(anchor=E)
 
 def load_ip_list():
     global ip_list
@@ -105,6 +101,7 @@ def save_ip_list():
     with open(IP_FILE, 'w', encoding='utf-8') as file:
         json.dump(ip_list, file, ensure_ascii=False, indent=4)
 
+# TODO: 将函数逻辑改为快捷填入 IP 地址而非强制选择
 def refresh_ip_list():
     # 清空旧控件
     for rb in radio_buttons:
@@ -127,18 +124,20 @@ def add_ip():
 
 load_ip_list()
 refresh_ip_list()
-if ip_list:
-    ip_var.set(ip_list[0])
-else:
-    ip_var.set('')
-add_button = ttk.Button(ipaddr_form, text="添加", command=add_ip, bootstyle="secondary")
-add_button.pack(anchor=W,pady=6)
+ip_entry_frame = ttk.Frame(ipaddr_form)
+ip_entry_frame.pack(anchor=S, pady=6)
+
+ip_entry = ttk.Entry(ip_entry_frame, width=20)
+ip_entry.pack(side=LEFT, padx=5)
+
+add_button = ttk.Button(ip_entry_frame, text="添加", command=add_ip, bootstyle="secondary")
+add_button.pack(side=RIGHT)
 
 # 输入信息
 default_font = tkfont.Font(family=MESSAGE_TYPEFACE_FAMILY,
                             size=MESSAGE_TEXT_SIZE)
 msg = ttk.Text(window, width=80, height=25, font=default_font) # ttk.Text 没有自带占位符文本
-msg.pack(padx=5, pady=5)
+msg.pack(padx=5, pady=5, fill=BOTH, expand=True)
 
 urgent_frm = ttk.Frame(window)
 urgent_frm.pack()
