@@ -34,7 +34,7 @@ $ExeFiles=@(
     "D:\Develop\LMTS_second_dev\dist\send.exe",
     "D:\Develop\LMTS_second_dev\dist\receive.exe"
 )
-$SpcPath = "D:\Develop\LMTS_second_dev\cert\root.spc"
+$SpcPath = "D:\Develop\root.spc"
 $PvkPath = "D:\Develop\LMTS_second_dev\cert\root.pvk"
 
 
