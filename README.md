@@ -1,32 +1,46 @@
-# 📌 二次开发说明
+[旧版 README](https://github.com/Paddy338/LMTS/blob/main/README_old.md) （或打开仓库内的 README_old.md 文件。）
 
-**本项目基于 [hbzsoft/lan_message_transmission_system](https://github.com/hbzsoft/lan_message_transmission_system) 进行二次开发。**
+![GitHub Tag](https://img.shields.io/github/v/tag/Paddy338/LMTS)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Paddy338/LMTS/total)
+![GitHub repo size](https://img.shields.io/github/repo-size/Paddy338/LMTS)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/Paddy338/LMTS?logo=github)
 
-原项目作者：[@hbzsoft](https://github.com/hbzsoft)  
-原项目许可证：GNU GPLv3
+![GitHub Repo stars](https://img.shields.io/github/stars/Paddy338/LMTS)
 
-感谢原作者的优秀工作。
+# 💬 项目简介
+局域网信息传输系统 (LMTS) 是一个轻量级的**局域网通知工具**，
+可以在校园、实验室等局域网环境下，向指定电脑发送弹窗消息。
 
-不知为何，我没找到发送端 v1.3 的源代码，就扒出了 v1.2 版本的并加了些额外的功能。  
-现在找到了但就维持现状吧，我不想再对比。
+尤其适合电教委员、老师向全班同学发布通知提醒，或学校内部电脑间基础纯文本通信。
 
-少量逻辑为AI所写，但经过严格的检验。
+## ✨ 功能
+- 简单可靠：基于 UDP 协议，接收端固定监听端口，无需额外服务器。
+- 醒目的弹窗 – 消息以大字体、置顶窗口显示，并标明发送者 IP。
+- 加急 – 勾选“加急”后，接收端会响铃（Windows）。
+- 发送频率限制 – 同一个 IP 地址 5 秒内只能发送一次消息，防止刷屏。
+- 一键复制 – 接收者点击“复制”按钮即可将消息内容复制到剪贴板。
 
-## 已实现的功能
-- 加急
-- 现代化界面
-- 常用IP地址
+## 正在规划或开发的功能
+- 给不同的 IP 地址批量发送信息
+- 将接收到的消息保存到本地
 
-## 📖 正在开发的功能
-- 批量发送信息
-- 将接收到的消息插入新文本文档
+# 💻 使用方法、运行环境
+1. 在本仓库 Releases (发行版) 下载打包版。
+    - 运行系统环境：Windows 10 及以上，64位。
+2. 下载或克隆仓库（必要：`/send.pyw`, `/receive.pyw`, `/icons/`），安装依赖库运行源码。
 
-# ⌨️ 功能、开发环境等
-该项目允许用户通过局域网向接收端发布用弹窗显示的通知。  
-弹窗置顶，并可能播放提示音。
+详细环境要求请见项目 Wiki。
 
-运行环境：`Windows + Python 3.5` 以上或 `Ubuntu 20.04`以上  
-需用 `pip` 安装 `pyperclip` 和 `ttkbootstrap`。
+# 🙏 致谢与贡献者
+**原作者**：韩邦泽（[hbzsoft](https://github.com/hbzsoft) | 南京外国语学校 2022 级初中毕业生，现就读于西安交通大学）  
+开发了 v1.0 ~ v1.3 版本，完成基础框架。  
+[项目地址](https://github.com/hbzsoft/lan_message_transmission_system)
 
-当前稳定版本：v1.5.1  
-当前预览版本：v1.5.2
+**二次开发**：裴启迪（[Paddy338](https://github.com/Paddy338) | 南京外国语学校 2025 级初中学生）
+
+感谢原作者的贡献。
+
+# 许可证
+本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证 第 3 版（或更高版本）的条款，重新分发和/或修改它。
+
+详情请见 [COPYING](https://github.com/Paddy338/LMTS/blob/main/COPYING) 文件。
