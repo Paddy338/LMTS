@@ -47,10 +47,10 @@ def send_socket():
         (c,addr) = s.recvfrom(1024)
     except ConnectionResetError as err:
         tkmsgbox.showerror(title = "错误",
-                             message = f'''网络错误\n详细信息：{err}''')
+                             message = f'''网络错误\n详细信息：{err}\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。''')
     except socket.timeout as err:
         tkmsgbox.showerror(title = "错误",
-                             message = f'''网络错误\n详细信息：{err}''')
+                             message = f'''网络错误\n详细信息：{err}\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。''')
     else:
         if c.decode() == "received":
             tkmsgbox.showinfo(title = "提示",
@@ -60,7 +60,6 @@ def send_socket():
                                  message = "发送太频繁，请稍后重试。")
 
 
-# 选择一个主题并创建窗口
 window = ttk.Window(themename = "cosmo")
 window.title("局域网信息传输系统 (LMTS) v%s - 发送端" % VERSION)
 try:
@@ -72,7 +71,6 @@ except TclError:
         window.iconbitmap("")
         tkmsgbox.showinfo(message="加载应用图标错误，将回退到默认图标。")
 
-ip_var = ttk.StringVar()   # 选中的 IP 地址
 
 # 工具栏
 toolbar = ttk.Frame(window, bootstyle = "light")
@@ -98,7 +96,7 @@ def load_ip_list():
             if not isinstance(ip_list,list): # 判断ip_list是不是列表类型
                 ip_list = []
     except json.JSONDecodeError:
-        tkmsgbox.showwarning(title = "JSON 解析错误", message = "JSON 文件的字符串格式不正确，可能是擅自不正确地修改了 JSON 文件。\n 将把常用 IP 地址置为空状态。")
+        tkmsgbox.showwarning(title = "JSON 解析错误", message = "ips.json 解码错误，可能是擅自不正确地修改了 JSON 文件。\n即将把常用 IP 地址置为空状态。")
         ip_list = []
     except FileNotFoundError:
         # 文件可能还未创建
@@ -153,7 +151,8 @@ send.pack(pady=8)
 
 link = ttk.Label(window,
                     text="官方网站: hbzsoft.github.io",
-                    font=("Arial",8))
+                    font=("Arial",8),
+                    bootstyle="secondary")
 link.pack()
 
 window.mainloop()

@@ -77,6 +77,9 @@ def show_message(text, addr):
     if not text:
         return
     
+    t = time.localtime()
+    received_time = f'''接收时间：{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min}:{t.tm_sec}'''
+
     window = ttk.Window()
     window.config(background = 'black')
     window.wm_attributes('-topmost', True)
@@ -98,27 +101,30 @@ def show_message(text, addr):
     main_menu.add_command(label = '关于...', command = show_about)
 
 
-    label = Text(window, font = ("Noto Sans SC", 30))
-    label.configure(foreground = 'white', background = 'black', width = 25, height = 8)
-    label.insert('1.0', break_down(text))
-    label.tag_configure("center", justify = "center")
-    label.tag_add("center", "1.0", 'end')
-    label.config(state = DISABLED) # 只读模式
-    label.pack(padx = 2, pady = 2, expand = TRUE, fill = X)
+    message = Text(window, font = ("Noto Sans SC", 30))
+    message.configure(foreground = 'white', background = 'black', width = 25, height = 8)
+    message.insert('1.0', break_down(text))
+    message.tag_configure("center", justify = "center")
+    message.tag_add("center", "1.0", 'end')
+    message.config(state = DISABLED) # 只读模式
+    message.pack(padx = 2, pady = 2, expand = TRUE, fill = X)
   
     frm_addr = ttk.Label(window, text = '由 ' + addr[0] + ' 发送')
     frm_addr.configure(foreground = 'white', background = 'black')
     frm_addr.pack()
-    copy = Button(window, text = '复制', command = cp)
+    copy = Button(window, text = '复制', command = cp, width=4)
     copy.pack(padx = 5, pady = 5)
+
+    received_time_text=ttk.Label(window, text=received_time)
+    received_time_text.configure(foreground = 'white', background = 'black')
+    received_time_text.pack()
 
     link = ttk.Label(window,
                     text = '官方网站: hbzsoft.github.io',
                     font = ("Arial",8))
-    link.configure(foreground = "white", background = "black", borderwidth = 0)
+    link.configure(foreground = "grey", background = "black", borderwidth = 0)
     link.pack()
 
-# 以下是 Python 网络编程的稳定写法
 def process_queue():
     """处理消息队列（从监听线程传来的消息）\\
         定时看有没有新消息，有就弹窗口"""
@@ -149,7 +155,6 @@ def listener():
         msg_queue.put((msg, addr))
         root.after(0, process_queue)
 
-##################################################
 
 # 创建一个不可见根窗口用于事件循环
 root = Tk()
