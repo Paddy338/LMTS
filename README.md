@@ -1,4 +1,4 @@
-[旧版 README](https://github.com/Paddy338/LMTS/blob/main/README_old.md) （或打开仓库内的 README_old.md 文件。）
+[旧版 README](https://github.com/Paddy338/LMTS/blob/main/archive/README_old.md) （或打开仓库内的 archive/README_old.md 文件。）
 
 ![GitHub Tag](https://img.shields.io/github/v/tag/Paddy338/LMTS)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Paddy338/LMTS/total)
@@ -39,8 +39,8 @@
 **二次开发**：裴启迪（[Paddy338](https://github.com/Paddy338) | 南京外国语学校 2025 级初中学生）
 
 感谢原作者的贡献。
-> [!NOTE] 关于 AI 使用
-> 部分代码或逻辑为 AI 所提供，但经过严格的检验以避免出错。
+> [!NOTE]
+> 关于 AI 使用：部分代码或逻辑为 AI 所提供，但经过严格的检验以避免出错。
 
 # 许可证
 本程序是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证 第 3 版（或更高版本）的条款，重新分发和/或修改它。
