@@ -62,7 +62,7 @@ def break_down(s):
 
 def open_url():
     """打开官方网站"""
-    webbrowser.open('https://hbzsoft.github.io/',new=0)
+    webbrowser.open('https://hanbangze.tech/', new = 0)
 
 def cp():
     """将最后显示的消息复制到剪贴板"""
@@ -78,11 +78,13 @@ def show_message(text, addr):
         return
     
     t = time.localtime()
-    received_time = f'''接收时间：{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min}:{t.tm_sec}'''
+    received_time = f'''接收时间：{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min:02d}\
+:{t.tm_sec:02d}''' # 分秒补零防止出现类似 0:0:0 的情况
 
-    window = ttk.Window()
-    window.config(background = 'black')
-    window.wm_attributes('-topmost', True)
+    '''window = ttk.Window(themename = "darkly")
+    window.wm_attributes('-topmost', True)'''
+    window=ttk.Toplevel(root) # 使用深色主题代替每个控件的颜色更改
+    window.wm_attributes("-topmost", 1)
     window.title('局域网信息传输系统 (LMTS) v%s - 接收端' % VERSION)
     try:
         window.iconbitmap("icons/appicon.ico")
@@ -93,16 +95,17 @@ def show_message(text, addr):
             window.iconbitmap("")
 
 
-    menubar = ttk.Menu(window)
-    window.config(menu = menubar)
+    toolbar = ttk.Frame(window)
+    toolbar.pack(side = "top", fill = "x")
+    try:
+        about_icon = ttk.PhotoImage(file = "icons/about.png")
+        about_btn = ttk.Button(toolbar, image = about_icon, command = show_about, bootstyle = "link")
+    except:
+        about_btn = ttk.Button(toolbar, text = "关于", command = show_about, bootstyle = "link")
+    about_btn.pack(side = "right", padx = 5)
 
-    main_menu = ttk.Menu(menubar, tearoff = 0)
-    menubar.add_cascade(label = '菜单', menu = main_menu)
-    main_menu.add_command(label = '关于...', command = show_about)
-
-
-    message = Text(window, font = ("Noto Sans SC", 30))
-    message.configure(foreground = 'white', background = 'black', width = 25, height = 8)
+    message = ttk.Text(window, font = ("Noto Sans SC", 30))
+    message.configure(width = 25, height = 8)
     message.insert('1.0', break_down(text))
     message.tag_configure("center", justify = "center")
     message.tag_add("center", "1.0", 'end')
@@ -110,23 +113,22 @@ def show_message(text, addr):
     message.pack(padx = 2, pady = 2, expand = TRUE, fill = X)
   
     frm_addr = ttk.Label(window, text = '由 ' + addr[0] + ' 发送')
-    frm_addr.configure(foreground = 'white', background = 'black')
     frm_addr.pack()
-    copy = Button(window, text = '复制', command = cp, width=4)
+    copy = ttk.Button(window, text = '复制', command = cp, width = 4)
     copy.pack(padx = 5, pady = 5)
 
-    received_time_text=ttk.Label(window, text=received_time)
-    received_time_text.configure(foreground = 'white', background = 'black')
+    received_time_text=ttk.Label(window, text = received_time)
     received_time_text.pack()
 
     link = ttk.Label(window,
-                    text = '官方网站: hbzsoft.github.io',
-                    font = ("Arial",8))
-    link.configure(foreground = "grey", background = "black", borderwidth = 0)
+                    text = '官方网站: hanbangze.tech',
+                    font = ("Arial",8),
+                    foreground="#808080")
+    link.configure(borderwidth = 0)
     link.pack()
 
 def process_queue():
-    """处理消息队列（从监听线程传来的消息）\\
+    """处理消息队列（从监听线程`listener()`传来的消息）\\
         定时看有没有新消息，有就弹窗口"""
     try:
         text, addr = msg_queue.get_nowait()
@@ -157,7 +159,7 @@ def listener():
 
 
 # 创建一个不可见根窗口用于事件循环
-root = Tk()
+root = ttk.Window(themename="darkly")
 root.withdraw()
 
 # 启动接收线程
