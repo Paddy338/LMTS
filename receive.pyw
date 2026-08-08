@@ -15,17 +15,18 @@ If not, see <https://www.gnu.org/licenses/>.
 ====================================================================================================
 '''
 
-from tkinter import *
-import tkinter.messagebox as tkmsgbox
+import queue
 import socket
 import threading
 import time
+import tkinter.messagebox as tkmsgbox
 import webbrowser
 import winsound
-import queue
+from tkinter import *
 
 import pyperclip
 import ttkbootstrap as ttk
+
 from show_about import VERSION, show_about
 
 PORT = 12345
@@ -47,14 +48,8 @@ def break_down(s):
         return
     if s[-1]=='\a':
         winsound.Beep(1000, 1000)
-        x = ''
-        for i in range(len(s)-1):
-            x+=s[i]
-        s = x
-        if s.find('\n'):
-            return s
-        else:
-            return '\n'.join([s[i:i+30] for i in range(0, len(s), 30)])
+        s = s[:-1] # 移除末尾的 \a
+
     if s.find('\n'):
         return s
     else:
@@ -85,7 +80,7 @@ def show_message(text, addr):
     window.wm_attributes('-topmost', True)'''
     window=ttk.Toplevel(root) # 使用深色主题代替每个控件的颜色更改
     window.wm_attributes("-topmost", 1)
-    window.title('局域网信息传输系统 (LMTS) v%s - 接收端' % VERSION)
+    window.title(f'''局域网信息传输系统 (LMTS) v{VERSION} - 接收端''')
     try:
         window.iconbitmap("icons/appicon.ico")
     except TclError:
@@ -140,14 +135,14 @@ def process_queue():
 def listener(): 
     """监听线程：接收 UDP 消息并放入队列"""
     while True: # 无限循环监听
-        data, addr = s.recvfrom(2048) # 收消息
+        data, addr = s.recvfrom(2048)
         ip = addr[0]
         cnt = count.get(ip)
         if cnt is None:
             count[ip] = int(time.time())
         else:
             diff = int(time.time()) - cnt
-            if diff <= 5: # 防刷屏，5 秒内不能重复发
+            if diff <= 5:
                 s.sendto(b'refused', addr)
                 continue
             else:
@@ -159,7 +154,7 @@ def listener():
 
 
 # 创建一个不可见根窗口用于事件循环
-root = ttk.Window(themename="darkly")
+root = ttk.Window(themename = "darkly")
 root.withdraw()
 
 # 启动接收线程
