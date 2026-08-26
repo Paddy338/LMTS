@@ -22,7 +22,7 @@ import socket
 import json
 
 import ttkbootstrap as ttk
-from show_about import VERSION, show_about
+from utils import VERSION, show_about
 
 LOAD_OK = 0
 RESTORED_BAK = 1

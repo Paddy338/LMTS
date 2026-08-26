@@ -27,7 +27,7 @@ from tkinter import *
 import pyperclip
 import ttkbootstrap as ttk
 
-from show_about import VERSION, show_about
+from utils import VERSION, show_about
 
 PORT = 12345
 try:

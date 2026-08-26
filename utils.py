@@ -1,5 +1,4 @@
 # 依赖项：程序中的“关于”对话框 & 版本信息
-# 不要改文件名！！
 import ttkbootstrap as ttk
 import webbrowser
 VERSION = '1.5.3'
