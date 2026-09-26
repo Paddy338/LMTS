@@ -1,18 +1,16 @@
 '''
-====================================================================================================
-Modified by Pei Qidi in 2025
-====================================================================================================
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
-General Public License as published by the Free Software Foundation, either version 3 of the License, 
-or (at your option) any later version.
+===============================================================================================================================
+Modified by Pei Qidi in 2026
+===============================================================================================================================
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as 
+published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-See the GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program. 
 If not, see <https://www.gnu.org/licenses/>.
-====================================================================================================
+===============================================================================================================================
 '''
 
 import queue
@@ -20,26 +18,28 @@ import socket
 import threading
 import time
 import tkinter.messagebox as tkmsgbox
+import tkinter.filedialog as filedialog
 import webbrowser
 import winsound
 from tkinter import *
 
 import pyperclip
 import ttkbootstrap as ttk
-
 from utils import VERSION, show_about
 
 PORT = 12345
-try:
-    s = socket.socket(type = socket.SOCK_DGRAM)
-    s.bind(('0.0.0.0',PORT))
-except OSError as err:
-    tkmsgbox.showerror(title = "错误",message = f'''无法建立Socket，请检查本程序的另一实例是否还在运行。\n{err}''')
 count = {}
 c = ''
 msg = ''
 msg_queue = queue.Queue()
 current_msg = ''
+
+try:
+    s = socket.socket(type = socket.SOCK_DGRAM)
+    s.bind(('0.0.0.0',PORT))
+except OSError as err:
+    tkmsgbox.showerror(title = "接收端 - 网络错误",
+        message = f'''无法建立Socket，请检查本程序的另一实例是否还在运行。\n{err}''')
 
 def break_down(s):
     """处理消息：
@@ -63,6 +63,26 @@ def cp():
     """将最后显示的消息复制到剪贴板"""
     pyperclip.copy(current_msg)
 
+def msg_saveas(parent_window, msg_str):
+    path: str = filedialog.asksaveasfilename(
+        parent = parent_window,
+        title = "接收端 - 另存消息",
+        defaultextension = ".txt",
+        filetypes = [
+            ("文本文档 (*.txt)", ".txt"),
+            ("所有文件 (*.*)", "")
+        ],
+    )
+    if not path:
+        return False
+    try:
+        with open(path, "w", encoding="utf-8-sig") as f:
+            f.write(msg_str)
+            return True
+    except Exception as e:
+        return False
+    
+
 def show_message(text, addr):
     """显示从 addr 接收到的消息 `text` 的弹窗。
     此函数仅在 GUI 线程上运行。"""
@@ -76,21 +96,16 @@ def show_message(text, addr):
     received_time = f'''接收时间：{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min:02d}\
 :{t.tm_sec:02d}''' # 分秒补零防止出现类似 0:0:0 的情况
 
-    '''window = ttk.Window(themename = "darkly")
-    window.wm_attributes('-topmost', True)'''
-    window=ttk.Toplevel(root) # 使用深色主题代替每个控件的颜色更改
+    window = ttk.Toplevel(root) # 使用深色主题
     window.wm_attributes("-topmost", 1)
     window.title(f'''局域网信息传输系统 (LMTS) v{VERSION} - 接收端''')
     try:
         window.iconbitmap("icons/appicon.ico")
     except TclError:
-        try:
-            window.iconbitmap("appicon.ico")
-        except TclError:
-            window.iconbitmap("")
+        window.iconbitmap("")
 
 
-    toolbar = ttk.Frame(window)
+    toolbar = ttk.Frame(window) # TODO: 将此处移动至窗口最底端，和官方网站放在一起
     toolbar.pack(side = "top", fill = "x")
     try:
         about_icon = ttk.PhotoImage(file = "icons/about.png")
@@ -107,20 +122,27 @@ def show_message(text, addr):
     message.config(state = DISABLED) # 只读模式
     message.pack(padx = 2, pady = 2, expand = TRUE, fill = X)
   
-    frm_addr = ttk.Label(window, text = '由 ' + addr[0] + ' 发送')
+    # frm_addr = ttk.Label(window, text = '由 ' + addr[0] + ' 发送')
+    frm_addr = ttk.Label(window, text = f'由 {addr[0]} 发送')
     frm_addr.pack()
-    copy = ttk.Button(window, text = '复制', command = cp, width = 4)
-    copy.pack(padx = 5, pady = 5)
 
-    received_time_text=ttk.Label(window, text = received_time)
-    received_time_text.pack()
+    btn_frame = ttk.Frame(window)
+    btn_frame.pack()
+    copy_btn = ttk.Button(btn_frame, text = '复制', command = cp, width = 4)
+    copy_btn.pack(padx = 5, pady = 5, side = "left")
+    saveas_btn = ttk.Button(btn_frame, text = '另存…', command = lambda: msg_saveas(window, current_msg), 
+                            width = 4, bootstyle="secondary")
+    saveas_btn.pack(padx=5, pady=5, side = "right")
 
-    link = ttk.Label(window,
+    recv_time_label = ttk.Label(window, text = received_time)
+    recv_time_label.pack()
+
+    website = ttk.Label(window,
                     text = '官方网站: hanbangze.tech',
                     font = ("Arial",8),
                     foreground="#808080")
-    link.configure(borderwidth = 0)
-    link.pack()
+    website.configure(borderwidth = 0)
+    website.pack()
 
 def process_queue():
     """处理消息队列（从监听线程`listener()`传来的消息）\\
@@ -134,7 +156,7 @@ def process_queue():
 
 def listener(): 
     """监听线程：接收 UDP 消息并放入队列"""
-    while True: # 无限循环监听
+    while True:
         data, addr = s.recvfrom(2048)
         ip = addr[0]
         cnt = count.get(ip)

@@ -29,7 +29,7 @@ PyInstaller -F -w  --icon .\icons\sendicon.ico `
 --exclude-module tkinter.dnd `
 --exclude-module tkinter.tix `
 --hidden-import ttkbootstrap `
---upx-dir=.\scripts `
+--upx-dir=.\misc `
 --log-level WARN `
 .\send.pyw
 
@@ -39,7 +39,7 @@ PyInstaller -F -w  --icon .\icons\receiveicon.ico `
 --exclude-module tkinter.dnd `
 --exclude-module tkinter.tix `
 --hidden-import ttkbootstrap `
---upx-dir=.\scripts `
+--upx-dir=.\misc `
 --log-level WARN `
 .\receive.pyw
 
