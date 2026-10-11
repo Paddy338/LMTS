@@ -1,31 +1,27 @@
-'''
-===============================================================================================================================
-Modified by Pei Qidi in 2026
-===============================================================================================================================
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as 
-published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. 
-If not, see <https://www.gnu.org/licenses/>.
-===============================================================================================================================
-'''
+# -----------------------------------------------------------------------------------------------------------------------------
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as 
+# published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program. 
+# If not, see <https://www.gnu.org/licenses/>.
+# -----------------------------------------------------------------------------------------------------------------------------
 
 import queue
 import socket
+import sys
 import threading
 import time
 import tkinter.messagebox as tkmsgbox
 import tkinter.filedialog as filedialog
 import webbrowser
-import winsound
 from tkinter import *
 
 import pyperclip
 import ttkbootstrap as ttk
-from utils import VERSION, show_about
+from utils import *
 
 PORT = 12345
 count = {}
@@ -41,13 +37,31 @@ except OSError as err:
     tkmsgbox.showerror(title = "接收端 - 网络错误",
         message = f'''无法建立Socket，请检查本程序的另一实例是否还在运行。\n{err}''')
 
+def urgent_beep():
+    if sys.platform=="win32":
+        import winsound
+        try:
+            winsound.PlaySound("assets/beep_1000hz.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
+        except Exception:
+            winsound.Beep(1000, 1000)
+    else:
+        try:
+            from playsound import playsound
+            threading.Thread(
+                target=playsound,
+                args=("assets/beep_1000hz.wav",),
+                daemon=True
+            ).start()
+        except Exception as e:
+            print(f"播放声音失败: {e}")
+
 def break_down(s):
     """处理消息：
     判断是否加急（末尾 \\a），每 30 字符自动换行"""
     if not s:
         return
     if s[-1]=='\a':
-        winsound.Beep(1000, 1000)
+        urgent_beep()
         s = s[:-1] # 移除末尾的 \a
 
     if s.find('\n'):
@@ -99,30 +113,17 @@ def show_message(text, addr):
     window = ttk.Toplevel(root) # 使用深色主题
     window.wm_attributes("-topmost", 1)
     window.title(f'''局域网信息传输系统 (LMTS) v{VERSION} - 接收端''')
-    try:
-        window.iconbitmap("icons/appicon.ico")
-    except TclError:
-        window.iconbitmap("")
+    load_window_icon(window)
 
-
-    toolbar = ttk.Frame(window) # TODO: 将此处移动至窗口最底端，和官方网站放在一起
-    toolbar.pack(side = "top", fill = "x")
-    try:
-        about_icon = ttk.PhotoImage(file = "icons/about.png")
-        about_btn = ttk.Button(toolbar, image = about_icon, command = show_about, bootstyle = "link")
-    except:
-        about_btn = ttk.Button(toolbar, text = "关于", command = show_about, bootstyle = "link")
-    about_btn.pack(side = "right", padx = 5)
 
     message = ttk.Text(window, font = ("Noto Sans SC", 30))
     message.configure(width = 25, height = 8)
     message.insert('1.0', break_down(text))
     message.tag_configure("center", justify = "center")
     message.tag_add("center", "1.0", 'end')
-    message.config(state = DISABLED) # 只读模式
-    message.pack(padx = 2, pady = 2, expand = TRUE, fill = X)
+    message.config(state = DISABLED) # 只读模式：用 Text 模拟 Label
+    message.pack(padx = 2, pady = 2, expand = TRUE, fill = BOTH)
   
-    # frm_addr = ttk.Label(window, text = '由 ' + addr[0] + ' 发送')
     frm_addr = ttk.Label(window, text = f'由 {addr[0]} 发送')
     frm_addr.pack()
 
@@ -130,19 +131,26 @@ def show_message(text, addr):
     btn_frame.pack()
     copy_btn = ttk.Button(btn_frame, text = '复制', command = cp, width = 4)
     copy_btn.pack(padx = 5, pady = 5, side = "left")
-    saveas_btn = ttk.Button(btn_frame, text = '另存…', command = lambda: msg_saveas(window, current_msg), 
+    saveas_btn = ttk.Button(btn_frame, text = '另存...', command = lambda: msg_saveas(window, current_msg), 
                             width = 4, bootstyle="secondary")
     saveas_btn.pack(padx=5, pady=5, side = "right")
 
-    recv_time_label = ttk.Label(window, text = received_time)
+    recv_time_label = ttk.Label(window, text = received_time, foreground="#808080")
     recv_time_label.pack()
 
-    website = ttk.Label(window,
+    
+    toolbar = ttk.Frame(window)
+    toolbar.pack(side = "bottom", fill = "x")
+    
+    about_btn = ttk.Button(toolbar, text = "关于", command = show_about, bootstyle = "outline")
+    about_btn.pack(side = "right", padx = 4, pady = 4)
+
+
+    website = ttk.Label(toolbar,
                     text = '官方网站: hanbangze.tech',
                     font = ("Arial",8),
                     foreground="#808080")
-    website.configure(borderwidth = 0)
-    website.pack()
+    website.pack(side = "left", padx = 4)
 
 def process_queue():
     """处理消息队列（从监听线程`listener()`传来的消息）\\

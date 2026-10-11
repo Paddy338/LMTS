@@ -23,7 +23,7 @@ del .\receive.spec
 
 # 打包（如使用循环要依次打包图标，不方便）
 Write-Host "开始打包……"
-PyInstaller -F -w  --icon .\icons\sendicon.ico `
+PyInstaller -F -w  --icon .\assets\ico\send.ico `
 --exclude-module test `
 --exclude-module unittest `
 --exclude-module tkinter.dnd `
@@ -33,8 +33,8 @@ PyInstaller -F -w  --icon .\icons\sendicon.ico `
 --log-level WARN `
 .\send.pyw
 
-PyInstaller -F -w  --icon .\icons\receiveicon.ico `
---exclude-module=test `
+PyInstaller -F -w  --icon .\assets\ico\receive.ico `
+--exclude-module test `
 --exclude-module unittest `
 --exclude-module tkinter.dnd `
 --exclude-module tkinter.tix `

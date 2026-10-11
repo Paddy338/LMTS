@@ -1,34 +1,29 @@
-'''
-====================================================================================================
-Modified by Pei Qidi in 2026
-====================================================================================================
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
-General Public License as published by the Free Software Foundation, either version 3 of the License, 
-or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. 
-If not, see <https://www.gnu.org/licenses/>.
-====================================================================================================
-'''
+# -----------------------------------------------------------------------------------------------------------------------------
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as 
+# published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program. 
+# If not, see <https://www.gnu.org/licenses/>.
+# -----------------------------------------------------------------------------------------------------------------------------
 
 from tkinter import *
 import tkinter.messagebox as tkmsgbox
 import tkinter.font as tkfont
 import socket
 import json
+import sys
 
 import ttkbootstrap as ttk
-from utils import VERSION, show_about
+from utils import *
 
 LOAD_OK = 0
 RESTORED_BAK = 1
 LOAD_EMPTY = 2
 
-class IPListManager:
+class IPAddrManager:
     '''
     加载、处理 IP 地址文件（目前仅支持数组格式 `/ips.json`）
     '''
@@ -89,7 +84,7 @@ class UDPNetwork:
         `dest_ip`: 目标 IP 地址。  
         `msg`: 要发送的消息。
 
-        发送完之后结果是返回值，不是消息弹窗。
+        发送完之后返回特定的状态字符串。
         '''
         self.s.sendto(msg.encode("gbk"), (dest_ip, self.remote_port))
 
@@ -101,13 +96,11 @@ class UDPNetwork:
         except socket.timeout:
             return "timeout"
 
-'''
-========================================== UI ==========================================
-'''
-class MainWindow:
-    def __init__(self, root: ttk.Window, ip_list: IPListManager, network: UDPNetwork):
+
+class GUI:
+    def __init__(self, root: ttk.Window, ip_list: IPAddrManager, network: UDPNetwork):
         self.root = root # 主窗口
-        self.iplistmgr = ip_list
+        self.ip = ip_list
         self.net = network
 
         self.msg_input = None # 消息输入框
@@ -115,15 +108,7 @@ class MainWindow:
         self.ip_combobox = None
 
         self.root.title(f'''局域网信息传输系统 (LMTS) v{VERSION} - 发送端''')
-        try:
-            self.root.iconbitmap("icons/appicon.ico")
-        except TclError:
-            try:
-                self.root.iconbitmap("appicon.ico")
-            except TclError:
-                self.root.iconbitmap("")
-                tkmsgbox.showinfo(message = "加载应用图标错误，将回退到默认图标。")
-
+        load_window_icon(self.root)
         self.render_ui()
 
     def render_ui(self):
@@ -143,7 +128,7 @@ class MainWindow:
         self.ip_entry_frame = ttk.Frame(self.ipaddr_form)
         self.ip_entry_frame.pack(pady = 4)
         self.ip_combobox = ttk.Combobox(self.ip_entry_frame, width = 18, cursor = "xterm")
-        self.ip_combobox["values"] = self.iplistmgr.get_all_ip()
+        self.ip_combobox["values"] = self.ip.get_all_ip()
         self.ip_combobox.pack(side = LEFT, padx = 5)
         self.add_button = ttk.Button(self.ip_entry_frame, text = "添加",
                                      command = self.add_new_ip, bootstyle = "secondary")
@@ -154,7 +139,7 @@ class MainWindow:
         self.input_hint.pack(pady = 4)
 
         # 输入消息
-        self.msg_frm = ttk.Frame(self.root, padding = 5)
+        self.msg_frm = ttk.Frame(self.root, padding = 4)
         self.msg_frm.grid(row = 0, column = 1, padx = (4, 8), pady = 4, sticky = "nsew")
         default_font = tkfont.Font(family = "Courier", size = 12)
         self.msg_input = ttk.Text(self.msg_frm, width = 60, height = 20, 
@@ -164,8 +149,8 @@ class MainWindow:
         self.urgent_frm = ttk.Frame(self.msg_frm)
         self.urgent_frm.pack(pady = (2, 0))
         self.urgent_check = ttk.Checkbutton(self.urgent_frm,
-                                        text = "加急（接收端将播放提示音）",
-                                        variable = self.urgent)
+                                text = "加急（接收端将播放提示音）",
+                                variable = self.urgent)
         self.urgent_check.pack()
 
         self.send_btn = ttk.Button(self.msg_frm, text = "发送", command = self.do_send,
@@ -181,22 +166,21 @@ class MainWindow:
         self.website.pack(side = "left", padx = 2, pady = 2)
 
         try:
-            self.about_icon = ttk.PhotoImage(file = "icons/about.png", width=24, height=24)
+            self.about_icon = ttk.PhotoImage(file = "assets/ui/about.png", width=24, height=24)
             self.about_btn = ttk.Label(self.status_bar, image = self.about_icon)
             self.about_btn.bind("<Button-1>", lambda e: show_about())
         except:
-            self.about_btn = ttk.Label(self.status_bar, text = "关于")
-            self.about_btn.bind("<Button-1>", lambda e: show_about())
-        self.about_btn.pack(side = "right", padx = 2, pady = 2)
+            self.about_btn = ttk.Button(self.status_bar, text = "关于", command=show_about, bootstyle="outline")
+        self.about_btn.pack(side = "right", padx = 4, pady = 4)
 
     def add_new_ip(self):
         ip = self.ip_combobox.get().strip()
-        ip_list = self.iplistmgr.ip_data
+        ip_list = self.ip.ip_data
         if ip and ip not in ip_list:
             ip_list.append(ip)
-            self.iplistmgr.ip_data = ip_list
-            self.iplistmgr.save_ip_list()
-        self.ip_combobox["values"] = self.iplistmgr.get_all_ip()
+            self.ip.ip_data = ip_list
+            self.ip.save_ip_list()
+        self.ip_combobox["values"] = self.ip.get_all_ip()
         self.ip_combobox.delete(0, "end")
 
     def do_send(self):
@@ -207,22 +191,22 @@ class MainWindow:
 
         result = self.net.send_socket(dest_ip = target_ip, msg = msg_content)
         if result == "received":
-            tkmsgbox.showinfo(title = "提示",
+            tkmsgbox.showinfo(title = "发送端 - 提示",
                                 message = "接受端收到了您的信息。")
         elif result == "refused":
-            tkmsgbox.showwarning(title="警告",
+            tkmsgbox.showwarning(title="发送端 - 警告",
                                 message = "发送太频繁，请稍后重试。")
         elif result == "timeout":
-            tkmsgbox.showerror(title = "错误",
-                                message = '''网络错误：连接超时。\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。''')
+            tkmsgbox.showerror(title = "发送端 - 错误",
+                                message = "网络错误：连接超时。\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。")
         elif result == "connectionreset":
-            tkmsgbox.showerror(title = "错误",
-                                message = '''网络错误：连接已重置。\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。''')
+            tkmsgbox.showerror(title = "发送端 - 错误",
+                                message = "网络错误：连接已重置。\n请检查 IP 地址是否正确、对端电脑是否已开启接收端、网络是否畅通。")
         
 if __name__=="__main__":
-    iplist = IPListManager(file_path = "ips.json", bak_path = "ips.bak")
-    network = UDPNetwork()
+    ip = IPAddrManager(file_path = "ips.json", bak_path = "ips.bak")
+    net = UDPNetwork()
 
     window = ttk.Window(themename = "cosmo")
-    app = MainWindow(window, iplist, network)
+    app = GUI(window, ip, net)
     window.mainloop()
