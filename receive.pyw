@@ -131,7 +131,7 @@ def show_message(text, addr):
     btn_frame.pack()
     copy_btn = ttk.Button(btn_frame, text = '复制', command = cp, width = 4)
     copy_btn.pack(padx = 5, pady = 5, side = "left")
-    saveas_btn = ttk.Button(btn_frame, text = '另存...', command = lambda: msg_saveas(window, current_msg), 
+    saveas_btn = ttk.Button(btn_frame, text = '另存...', command = lambda: msg_saveas(window, current_msg.replace('\a', '')), 
                             width = 4, bootstyle="secondary")
     saveas_btn.pack(padx=5, pady=5, side = "right")
 

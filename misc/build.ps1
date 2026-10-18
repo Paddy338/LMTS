@@ -8,7 +8,7 @@ $ExeFiles=@(
     "D:\Develop\LMTS\dist\send.exe",
     "D:\Develop\LMTS\dist\receive.exe"
 )
-$SpcPath = "D:\Develop\LMTS\cert\Paddy338.spc"
+$SpcPath = "D:\Develop\LMTS\misc\cert\Paddy338.spc"
 $PvkPath = "D:\Develop\Paddy338.pvk" # 不在仓库里，仓库里只有公钥
 
 # 虚拟环境
