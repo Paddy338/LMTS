@@ -31,6 +31,13 @@ class LMTSServer:
         self.current_msg = ''
         self.root = root_win
 
+        self.settings = {
+            "SaveMessage": {
+                "SaveIP": True,
+                "SaveRecvTime": True
+            }
+        }
+
         try:
             self.s = socket.socket(type = socket.SOCK_DGRAM)
             self.s.bind(('0.0.0.0',self.PORT))
@@ -78,7 +85,7 @@ class LMTSServer:
         webbrowser.open('https://hanbangze.tech/', new = 0)
 
 
-    def msg_saveas(self, parent_window, msg_str):
+    def msg_saveas(self, parent_window, msg_str, source_ip: str, recv_time: str):
         path: str = filedialog.asksaveasfilename(
             parent = parent_window,
             title = "接收端 - 另存消息",
@@ -90,9 +97,17 @@ class LMTSServer:
         )
         if not path:
             return False
+
+        str_on_save = ""
+        if self.settings["SaveMessage"]["SaveRecvTime"]:
+            str_on_save += "%s\n" % recv_time
+        str_on_save += msg_str
+        if self.settings["SaveMessage"]["SaveIP"]:
+            str_on_save += "\n\n由 %s 发送" % source_ip
+        
         try:
             with open(path, "w", encoding="utf-8-sig") as f:
-                f.write(msg_str)
+                f.write(str_on_save)
                 return True
         except Exception as e:
             return False
@@ -108,7 +123,7 @@ class LMTSServer:
             return
         
         t = time.localtime()
-        received_time = f'''接收时间：{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min:02d}\
+        received_time = f'''{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min:02d}\
 :{t.tm_sec:02d}''' # 分秒补零防止出现类似 0:0:0 的情况
 
         window = ttk.Toplevel(self.root) # 使用深色主题
@@ -131,13 +146,18 @@ class LMTSServer:
         btn_frame = ttk.Frame(window)
         btn_frame.pack()
         copy_btn = ttk.Button(btn_frame, text = '复制', command = lambda: pyperclip.copy(msg_local), width = 4)
-        copy_btn.pack(padx = 5, pady = 5, side = "left")
-        saveas_btn = ttk.Button(btn_frame, text = '另存...', 
-            command = lambda: self.msg_saveas(window, msg_local.replace('\a', '')), 
-            width = 4, bootstyle="secondary")
-        saveas_btn.pack(padx=5, pady=5, side = "right")
+        copy_btn.pack(padx = 4, pady = 4, side = "left")
 
-        recv_time_label = ttk.Label(window, text = received_time, foreground="#808080")
+        saveas_btn = ttk.Button(btn_frame, text = '另存...', 
+            command = lambda: self.msg_saveas(
+                parent_window = window, 
+                msg_str = msg_local.replace('\a', ''), 
+                source_ip = addr[0], 
+                recv_time = received_time), 
+            width = 4, bootstyle="secondary")
+        saveas_btn.pack(padx = 4, pady = 4, side = "right")
+
+        recv_time_label = ttk.Label(window, text = "接收时间：" + received_time, foreground="#808080")
         recv_time_label.pack()
 
         

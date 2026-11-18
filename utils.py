@@ -1,5 +1,6 @@
 '''
 一些共用依赖项：版本号、关于对话框等
+此处仅存放一些零散的函数等（utils = utility + s），整套的模块单独成文件
 '''
 # -----------------------------------------------------------------------------------------------------------------------------
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as 
@@ -69,13 +70,13 @@ def load_window_icon(root: ttk.Window | ttk.Toplevel):
             try:
                 # 挂载到root实例防止GC回收
                 root._appicon = ttk.PhotoImage(file=str(png_path))
-                root.iconphoto(True, root._tk_app_icon)
+                root.iconphoto(True, root._appicon)
             except Exception as e2:
                 pass
 
     else:
         try:
             root._appicon = PhotoImage(file=str(png_path))
-            root.iconphoto(True, root._tk_app_icon)
+            root.iconphoto(True, root._appicon)
         except Exception as e:
             pass
